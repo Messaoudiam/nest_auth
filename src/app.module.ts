@@ -10,11 +10,14 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { User } from './auth/entities/user.entity';
+import { HealthModule } from './health/health.module';
+import { validate } from './config/env.validation';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validate,
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -27,6 +30,7 @@ import { User } from './auth/entities/user.entity';
       synchronize: true,
     }),
     AuthModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

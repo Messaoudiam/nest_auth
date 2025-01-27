@@ -1,0 +1,66 @@
+name: CI/CD Pipeline
+
+# Déclenche le workflow sur push et pull request sur la branche main
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    # Configuration du service MySQL pour les tests
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      # Récupère le code source
+      - uses: actions/checkout@v3
+
+      # Configure Node.js v18
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Installation des dépendances
+      - name: Install dependencies
+        run: npm ci
+
+      # Vérification de la qualité du code
+      - name: Run linter
+        run: npm run lint
+
+      # Exécution des tests avec les variables d'environnement de test
+      - name: Run tests
+        run: npm test
+        env:
+          DB_HOST: localhost
+          DB_PORT: 3306
+          DB_USERNAME: root
+          DB_PASSWORD: test
+          DB_DATABASE: test_db
+          JWT_SECRET: test_secret
+
+      # Build de l'application
+      - name: Build
+        run: npm run build
+
+  # Job de déploiement (à configurer selon votre infrastructure)
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy to production
+        run: echo "Add your deployment steps here"

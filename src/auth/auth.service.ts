@@ -15,6 +15,8 @@ import { JwtPayload } from './interfaces';
 
 @Injectable()
 export class AuthService {
+  private blacklistedTokens: Set<string> = new Set();
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -79,5 +81,16 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async logout(token: string): Promise<{ message: string }> {
+    this.blacklistedTokens.add(token);
+    return {
+      message: 'Logout successful',
+    };
+  }
+
+  isTokenBlacklisted(token: string): boolean {
+    return this.blacklistedTokens.has(token);
   }
 }

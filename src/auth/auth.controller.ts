@@ -6,6 +6,7 @@ import {
   UseGuards,
   Body,
   Request,
+  Headers,
 } from '@nestjs/common';
 // services
 import { AuthService } from './auth.service';
@@ -13,6 +14,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto, LoginDto } from './dto';
 // guards
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtBlacklistGuard } from './guards/jwt-blacklist.guard';
 // swagger
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -31,6 +33,13 @@ export class AuthController {
   @ApiOperation({ summary: 'Login user' })
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtBlacklistGuard)
+  logout(@Headers('authorization') auth: string) {
+    const token = auth.split(' ')[1];
+    return this.authService.logout(token);
   }
 
   @Get('profile')
